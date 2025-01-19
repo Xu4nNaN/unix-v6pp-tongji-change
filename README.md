@@ -61,6 +61,19 @@
 * `QEMU version 7.2.9 (qemu-system-i386)`
 * `KDE Plasma 5.27.5 (X11)`
 
+**`Ubuntu 22.04.5 LTS WSL2`**
+
+- `GNU/Linux 5.15.167.4-microsoft-standard-WSL2 x86_64`
+* `gcc (Ubuntu 11.4.0-1ubuntu1~22.04) 11.4.0`
+* `GNU gdb (Ubuntu 12.1-0ubuntu1~22.04.2) 12.1`
+* `cmake version 3.31.3`
+* `GNU Make 4.3`
+* `QEMU emulator version 6.2.0 (Debian 1:6.2+dfsg-2ubuntu6.24) (qemu-system-i386)`
+* `KDE Plasma 暂未安装`
+- `ninja version 1.10.1`
+- `NASM version 2.15.05`
+- `kvm 暂未启用，暂未安装`
+
 ## 物理内存占用约定
 
 | 起始地址 | 终止地址（含） | 大小 |        用途和备注        |
@@ -201,3 +214,29 @@ QEMU 模拟的芯片组默认关闭 DMA 功能，需要手动开启。
 
 1. 使用参考（抄的）自 `glibc` 的 `strlen` 函数，一次性可以判断 4 个字节。
 2. 支持快速内存拷贝的 `memcpy`，在入参整齐时一次性拷贝 4 字节。这个改进可以很大程度提升 VESA Console 的滚屏体验（其实可以考虑使用AVX或SSE指令进一步加速）。
+
+### 2025更新
+
+#### 时钟变更
+
+时钟由 pit 换为 hpet
+
+#### 系统调用表
+
+修复系统调用表参数注释与实际不一致的问题
+
+#### libyrosstd
+
+修复 sprintf 输出负数时输出溢出值的问题
+
+### 2025TODO
+
+#### 程序莫名进入断点
+
+未设置断点，但运行程序时概率进入断点，使程序停止。
+
+#### ELF修复
+
+
+
+#### 
