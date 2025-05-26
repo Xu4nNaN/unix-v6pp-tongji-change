@@ -101,7 +101,6 @@ static void callDtors()
 	}
 }
 
-
 void main0(void)
 {
 	Machine& machine = Machine::Instance();
@@ -114,28 +113,24 @@ void main0(void)
 	Chip8259A::IrqEnable(Chip8259A::IRQ_SLAVE);
 	Chip8259A::IrqEnable(Chip8259A::IRQ_KBD);
 
-
 	//init gdt
 	machine.InitGDT();
 	machine.LoadGDT();
+
 	//init idt
 	machine.InitIDT();	
 	machine.LoadIDT();
 
-	machine.InitPageDirectory();    // 初始化页目录、核心态页表
-	Machine::Instance().InitUserPageTable();     // 初始化用户态页表
-	machine.EnablePageProtection();    //开启分页模式
+	//init page protection
+	machine.InitPageDirectory();
+	machine.EnablePageProtection();
 	/* 
 	 * InitPageDirectory()中将线性地址0-4M映射到物理内存
 	 * 0-4M是为保证此注释以下至本函数结尾的代码正确执行！
-	 *
-	 * 现在，除了CS是内核初始化阶段的段选择子，其余段寄存器全是boot使用的段选择子，尤其是SS。
-	 * 分段单元给出的线性地址是[0,4M)。开启分页模式后，一定要有这段空间的映射关系，否则，通不过。
-	 * [4M，8M)空间用户区，不应该被映射，所以先空着，InitUserPageTable(),base填0。
 	 */
 
 	//使用0x10段寄存器
-	__asm
+	__asm__ __volatile__
 		(" \
 		mov $0x10, %ax\n\t \
 		mov %ax, %ds\n\t \
@@ -144,15 +139,14 @@ void main0(void)
 		);
 
 	//将初始化堆栈设置为0xc0400000，这里破坏了封装性，考虑使用更好的方法
-	__asm
+	__asm__ __volatile__
 		(
 		" \
 		mov $0xc0400000, %ebp \n\t \
 		mov $0xc0400000, %esp \n\t \
 		jmp $0x8, $next"
-		);
+		);			
 	
-	__asm ("ud2");
 }
 
 /* 应用程序从main返回，进程就终止了，这全是runtime()的功劳。没有它，就只能用exit终止进程了。xV6没这个功能^-^ */
@@ -181,27 +175,10 @@ extern "C" void ExecShell()
 	int argc = 0;
 	char* argv = NULL;
 	const char* pathname = "/Shell.exe";
+
 	__asm ("int $0x80"::"a"(11/* execv */),"b"(pathname),"c"(argc),"d"(argv));
 	return;
 }
-
-#if 0
-/* 此函数test文件夹中的代码会引用，但貌似可以删除，记得把它删掉*/
-extern "C" void Delay()
-{
-	for ( int i = 0; i < 50; i++ )
-		for ( int j = 0; j < 10000; j++ )
-		{
-			int a;
-			int b;
-			int c=a+b;
-			c++;
-		}
-}
-#endif
-
-
-int splash();
 
 extern "C" void next()
 {
@@ -222,12 +199,9 @@ extern "C" void next()
 	
 #endif
 	
-
 	//这个时候0M-4M的内存映射已经不被使用了，所以要重新映射用户态的页表，为用户态程序运行做好准备
-	//Machine::Instance().InitUserPageTable();
-	//FlushPageDirectory();
-	
-
+	Machine::Instance().InitUserPageTable();
+	FlushPageDirectory();
 	Machine::Instance().LoadTaskRegister();
 	
 	/* 获取CMOS当前时间，设置系统时钟 */
@@ -258,18 +232,14 @@ extern "C" void next()
 	Kernel::Instance().GetFileSystem().LoadSuperBlock();
 	Diagnose::Write("Unix V6++ FileSystem Loaded......OK\n");
 
-	Diagnose::Write("test \n");
-
-	/*  初始化rootDirInode和用户当前工作目录，以便NameI()正常工作 */
+	/* 初始化rootDirInode和用户当前工作目录，以便NameI()正常工作 */
 	FileManager& fileMgr = Kernel::Instance().GetFileManager();
 
-	//fileMgr.rootDirInode = g_InodeTable.IGet(DeviceManager::ROOTDEV, FileSystem::ROOTINO);
 	fileMgr.rootDirInode = g_InodeTable.IGet(DeviceManager::ROOTDEV, 1);
 	fileMgr.rootDirInode->i_flag &= (~Inode::ILOCK);
 
 	User& us = Kernel::Instance().GetUser();
 	us.u_cdir = g_InodeTable.IGet(DeviceManager::ROOTDEV, 1);
-	//us.u_cdir = g_InodeTable.IGet(DeviceManager::ROOTDEV, FileSystem::ROOTINO);
 	us.u_cdir->i_flag &= (~Inode::ILOCK);
 	strcpy(us.u_curdir, "/");
 
@@ -293,7 +263,6 @@ extern "C" void next()
 	splash();
 #endif
 
-
 	unsigned char* runtimeSrc = (unsigned char*)runtime;
 	unsigned char* runtimeDst = 0x00000000;
 	for (unsigned int i = 0; i < (unsigned long)ExecShell - (unsigned long)runtime; i++)
@@ -304,13 +273,16 @@ extern "C" void next()
     //us.u_MemoryDescriptor.Release();
 
 	int pid = Kernel::Instance().GetProcessManager().NewProc();         /* 0#进程创建1#进程 */
-	if( 0 == pid )     /* 0#进程执行Sched()，成为系统中永远运行在核心态的唯一进程  */
+	
+	if( 0 == pid )     
 	{
+		/* 0#进程执行Sched()，成为系统中永远运行在核心态的唯一进程  */
 		us.u_procp->p_ttyp = NULL;
 		Kernel::Instance().GetProcessManager().Sched();
 	}
-	else               /* 1#进程执行应用程序shell.exe,是普通进程  */
+	else               
 	{
+		/* 1#进程执行应用程序shell.exe,是普通进程  */
 		Machine::Instance().InitUserPageTable();      //这是直接写0x202,0x203页表，没相对虚实地址映射表一样okay！
 		FlushPageDirectory();
 
@@ -318,6 +290,7 @@ extern "C" void next()
 
 		/* 1#进程回用户态，执行exec("shell.exe")系统调用*/
 		MoveToUserStack();
+		
 		__asm ("call *%%eax" :: "a"((unsigned long)ExecShell - 0xC0000000));   //要访问用户栈，所以一定要有映射！
 	}
 }

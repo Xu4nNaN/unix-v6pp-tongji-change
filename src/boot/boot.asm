@@ -1,6 +1,5 @@
 org 0x7c00
 
-
 ; 
 ; 实模式内存布局
 ;
@@ -21,8 +20,6 @@ org 0x7c00
 ; 0xFFFF0    16B       系统 BIOS 入口地址
 ; 
 
-
-
 ; vesa support
 ;
 ;   https://github.com/FlowerBlackG/YurongOS/blob/master/src/boot/boot.asm
@@ -30,12 +27,9 @@ org 0x7c00
 vesa_video_mode equ 0x143
 vesa_video_mode_code equ (vesa_video_mode | 0x4000)
 
-
 ;section .code16
 [BITS 16]
 start:
-
-		mov esp, 0x7C00  ; 暂用栈
 
 %ifdef USE_VESA
 		; 读取 VESA 信息。
@@ -59,44 +53,38 @@ start:
 %endif
 
 
-		lgdt [gdtr]
+lgdt [gdtr]
 		
-		cli
+cli
 
-		;打开a20 地址线
-		in al,92h
-		or al,00000010b
-		out 92h, al
+;打开a20 地址线
+in al,92h
+or al,00000010b
+out 92h, al
 
-;		start to load sector 1 to memory 
-		
-		mov eax, cr0;
-		or eax, 1;
-		mov cr0, eax
-
-		; enable PSE so we can use 2MB page :D  -- added by gty
-		; See:
-		;   https://www.wikiwand.com/en/Control_register#CR4
-		;   https://wiki.osdev.org/Paging
-		mov eax, cr4
-		or eax, 0b10000
-		mov cr4, eax
-				
-		jmp dword 0x8:_startup ;
+; 进入保护模式
+mov eax, cr0;
+or eax, 1;
+mov cr0, eax
+			
+jmp dword 0x8:_startup ;设置cs段寄存器
 
 	
 ;section .code32
 [BITS 32]
 _startup:
 
+		; 设置其他段寄存器
 		mov ax, 0x10
 		mov ds, ax
 		mov es, ax
 		mov ss, ax
 
+		; 从磁盘加载内核
 		mov	ecx, KERNEL_SIZE 	;cx = 扇区数KERNEL_SIZE，作为loop的次数
 		mov eax, 1				;LBA寻址模式下sector编号从0开始。  #0是引导扇区，#1扇区开始才是kernel的首扇区
 		mov ebx, 0x100000		;目标存放地址从1M处开始，每次loop递增512 bytes
+
 _load_kernel:
 		push eax
 		inc eax
@@ -184,60 +172,39 @@ _load_sector:
 ;section .data
 KERNEL_SIZE		equ		(398)	    
 
-gdt:		
-		dw	0x0000
-		dw	0x0000
-		dw	0x0000
-		dw	0x0000
-		
-		dw	0xFFFF		
-		dw	0x0000		
-		dw	0x9A00		
-		dw	0x00CF		
-		
-		dw	0xFFFF		
-		dw	0x0000		
-		dw	0x9200		
-		dw	0x00CF		
-		
 
-		; limit    : 0xfffff
-		; base     : 0x40000000
-		; access   : 0
-		; rw       : 1
-		; dc       : 0
-		; exec     : 1
-		; descType : code/data
-		; privi lv : 0
-		; present  : 1
-		; longMode : 0
-		; sizeFlag : 32 bits
-		; granular : 4 KB
+gdt:					;  gdt表头的占位描述符
+dw 0x0000
+dw 0x0000
+dw 0x0000
+dw 0x0000		;GDT表第0项必须为全零
 
-		dw	0xFFFF		
-		dw	0x0000		
-		dw	0x9A00		
-		dw	0x40CF		
-		
+; boot运行时使用的代码段，段选择子0x8
+dw 0xFFFF 		; limit(L15~0) =0xffff
+dw 0x0000 		; base(B15~0)=0x0000
+dw 0x9A00 		; P=1 , 段存在内存；DPL=0 , 特权级；TYPE=1010 , 执行/可读；B23~16 = 0x00
+dw 0x00CF		; B31~24 = 0x00；; G=1 , 段限单位为 4KB；D/B=1 , 32bit；L19~16=0xf
 
-		; limit    : 0xfffff
-		; base     : 0x40000000
-		; access   : 0
-		; rw       : 1
-		; dc       : 0
-		; exec     : 0
-		; descType : code/data
-		; privi lv : 0
-		; present  : 1
-		; longMode : 0
-		; sizeFlag : 32 bits
-		; granular : 4 KB
+; boot运行时使用的数据段，段选择子0x10
+dw 0xFFFF 		; limit(L15~0)=0xffff
+dw 0x0000 		; base(B15~0)=0x0000
+dw 0x9200 		; P=1 , 段存在内存；DPL=0 , 特权级；TYPE=0010 , 可读/写；B23~16 = 0x00
+dw 0x00CF 		; B31~24 = 0x00；G=1 , 段限单位为 4KB；D/B=1 , 32bit；L19~16=0xf
 
-		dw	0xFFFF		
-		dw	0x0000		
-		dw	0x9200		
-		dw	0x40CF		
-		
+; 内核初始化阶段的代码段，段选择子0x18
+dw 0xFFFF 		; limit(L15~0)=0xffff；
+dw 0x0000 		; base(B15~0)=0x8000
+dw 0x9A00 		; P=1 , 段存在内存；DPL=3 , 特权级；TYPE=0010 , 可读/写；B23~16 = 0x0B
+dw 0x40CF 		; B31~24 = 0x00；G=1 , 段限单位为 4KB；D/B=1 , 32bit；L19~16=0xf
+
+; 内核初始化阶段的数据段，段选择子0x20
+dw 0xFFFF 		; limit(L15~0)=0xffff
+dw 0x0000 		; base(B15~0)=0x0000
+dw 0x9200 		; P=1 , 段存在内存；DPL=3 , 特权级；TYPE=0010 , 可读/写；B23~16 = 0x00
+dw 0x40CF 		; B31~24 = 0x00；G=1 , 段限单位为 4KB；D/B=1 , 32bit；L19~16=0xf
+
+; GDT End
+
 gdtr:
 		dw $-gdt		;limit
 		dd gdt			;offset
