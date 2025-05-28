@@ -172,39 +172,40 @@ void Machine::InitPageDirectory()
 	 * 0x00000000-0x00400000 和 0xC0000000-0xC0400000
 	 */
 	PageDirectory* pPageDirectory = (PageDirectory*)(PAGE_DIRECTORY_BASE_ADDRESS + KERNEL_SPACE_START_ADDRESS);
-	
-	/* 填写页目录（0x200#页表）的第0项，使线性地址0-4M映射到物理内存0-4M */
-	/*
-	pPageDirectory->m_Entrys[0].m_UserSupervisor = 1;                   //用户态
-	pPageDirectory->m_Entrys[0].m_Present = 1;
-	pPageDirectory->m_Entrys[0].m_ReadWriter = 1;
-	pPageDirectory->m_Entrys[0].m_PageTableBaseAddress = KERNEL_PAGE_TABLE_BASE_ADDRESS >> 12;
-	*/
-
-	/* 填写页目录（0x200#）页表的第768项，使线性地址0xC0000000-0xC0400000映射到物理内存0-4M。未来核心态空间尺寸大于4M字节，记得这里要改*/
-	unsigned int kPageTableIdx = KERNEL_SPACE_START_ADDRESS / PageTable::SIZE_PER_PAGETABLE_MAP; 
-	pPageDirectory->m_Entrys[kPageTableIdx].m_UserSupervisor = 0;       // 核心态
-	pPageDirectory->m_Entrys[kPageTableIdx].m_Present = 1;
-	pPageDirectory->m_Entrys[kPageTableIdx].m_ReadWriter = 1;
-	pPageDirectory->m_Entrys[kPageTableIdx].m_PageTableBaseAddress = KERNEL_PAGE_TABLE_BASE_ADDRESS >> 12;
-
-
-	/* 
-	 * 初始化核心态页表。核心态页表被存放在物理地址
-	 * 0x200000(2M)，所对应线性地址则为0xC0200000
-	 */
 	PageTable* pPageTable = (PageTable*)(KERNEL_PAGE_TABLE_BASE_ADDRESS + KERNEL_SPACE_START_ADDRESS);
-	/* 
-	 * 使用物理内存0-4M填写页表的表项，至此完成物理内存0-4M
-	 * 映射到高位0xC0000000-0xC0400000，供操作系统内核使用。
-	 */
-	for ( unsigned int i = 0; i < PageTable::ENTRY_CNT_PER_PAGETABLE; i++ )
-	{
-		pPageTable->m_Entrys[i].m_UserSupervisor = 0;
-		pPageTable->m_Entrys[i].m_Present = 1;
-		pPageTable->m_Entrys[i].m_ReadWriter = 1;
-		pPageTable->m_Entrys[i].m_PageBaseAddress = i;
-	}
+	
+	// /* 填写页目录（0x200#页表）的第0项，使线性地址0-4M映射到物理内存0-4M */
+	// /*
+	// pPageDirectory->m_Entrys[0].m_UserSupervisor = 1;                   //用户态
+	// pPageDirectory->m_Entrys[0].m_Present = 1;
+	// pPageDirectory->m_Entrys[0].m_ReadWriter = 1;
+	// pPageDirectory->m_Entrys[0].m_PageTableBaseAddress = KERNEL_PAGE_TABLE_BASE_ADDRESS >> 12;
+	// */
+
+	// /* 填写页目录（0x200#）页表的第768项，使线性地址0xC0000000-0xC0400000映射到物理内存0-4M。未来核心态空间尺寸大于4M字节，记得这里要改*/
+	// unsigned int kPageTableIdx = KERNEL_SPACE_START_ADDRESS / PageTable::SIZE_PER_PAGETABLE_MAP; 
+	// pPageDirectory->m_Entrys[kPageTableIdx].m_UserSupervisor = 0;       // 核心态
+	// pPageDirectory->m_Entrys[kPageTableIdx].m_Present = 1;
+	// pPageDirectory->m_Entrys[kPageTableIdx].m_ReadWriter = 1;
+	// pPageDirectory->m_Entrys[kPageTableIdx].m_PageTableBaseAddress = KERNEL_PAGE_TABLE_BASE_ADDRESS >> 12;
+
+
+	// /* 
+	//  * 初始化核心态页表。核心态页表被存放在物理地址
+	//  * 0x200000(2M)，所对应线性地址则为0xC0200000
+	//  */
+	// PageTable* pPageTable = (PageTable*)(KERNEL_PAGE_TABLE_BASE_ADDRESS + KERNEL_SPACE_START_ADDRESS);
+	// /* 
+	//  * 使用物理内存0-4M填写页表的表项，至此完成物理内存0-4M
+	//  * 映射到高位0xC0000000-0xC0400000，供操作系统内核使用。
+	//  */
+	// for ( unsigned int i = 0; i < PageTable::ENTRY_CNT_PER_PAGETABLE; i++ )
+	// {
+	// 	pPageTable->m_Entrys[i].m_UserSupervisor = 0;
+	// 	pPageTable->m_Entrys[i].m_Present = 1;
+	// 	pPageTable->m_Entrys[i].m_ReadWriter = 1;
+	// 	pPageTable->m_Entrys[i].m_PageBaseAddress = i;
+	// }
 
 
 	this->m_PageDirectory = pPageDirectory;
