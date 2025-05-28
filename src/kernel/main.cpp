@@ -29,6 +29,8 @@
 #include "libyrosstd/sys/types.h"
 #include "libyrosstd/string.h"
 
+int splash();  // splash.c
+
 bool isInit = false;
 
 extern "C" void MasterIRQ7()
