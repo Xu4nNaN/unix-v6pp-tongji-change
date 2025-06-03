@@ -43,13 +43,13 @@ greatstart:
 	ud2
 
 
-; �� 0 ���һ��ҳ��
-; �����ڲ������κο����õ��ļĴ�����
+; 用 0 填充一个页框。
+; 函数内不备份任何可能用到的寄存器。
 ;
-; ���Σ�
-;   edi: ��ʼ��ַ��
-;   ecx: ��Ԫ������ 4 �ֽ�Ϊ 1 ����Ԫ��
-;        ������� 0�������ڲ�����ȷ��У�顣
+; 传参：
+;   edi: 起始地址。
+;   ecx: 单元数。以 4 字节为 1 个单元。
+;        必须大于 0。函数内不做正确性校验。
 ;
 zero_fill_area:
 
@@ -68,13 +68,13 @@ zero_fill_area:
 
 
 
-align 4 ; 4 �ֽڶ���
+align 4 ; 4 字节对齐
 empty_idt:
     .length dw 0
     .base dd 0
 
 
-; ѡ���ӡ�
+; 选择子。
 code_selector equ (1 << 3)
 data_selector equ (2 << 3)
 
@@ -91,7 +91,7 @@ align 4
 gdt_base:
     dq 0
 
-; ����Ρ�
+; 代码段。
 gdt_code:
 
 	; (idx)    : 1

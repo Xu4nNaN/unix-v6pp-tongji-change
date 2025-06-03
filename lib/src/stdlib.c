@@ -156,7 +156,7 @@ char* lftoa( double value, char* buffer, int precision )
 		*bp++ = (char)(right * 10.0) + '0';
 		right = double_getRight(right * 10);
 	}
-	//if ( prec && right > 0.5 ) *(bp-1) += 1; /*四舍五入*/
+	//if ( prec && right > 0.5 ) *(bp-1) += 1; /*鍥涜垗浜斿叆*/
 	*bp = 0;
 	return buffer;
 }
@@ -242,7 +242,7 @@ char* exlftoa( double value, char* buffer, int precision, char e )
 		*bp++ = (char)(right * 10.0) + '0';
 		right = double_getRight(right * 10);
 	}
-	//if ( precision && right > 0.5 ) *(bp-1) += 1; /*四舍五入*/
+	//if ( precision && right > 0.5 ) *(bp-1) += 1; /*鍥涜垗浜斿叆*/
 	*bp++ = e;
 	itoa(exponent, exp, 10);	
 	if ( *pexp == '-' )

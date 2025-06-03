@@ -4,7 +4,7 @@
 /*
  * SVGA
  *
- * ´´½¨ÓÚ 2023Äê7ÔÂ5ÈÕ ÉÏº£ÊÐ¼Î¶¨Çø°²Í¤Õò
+ * åˆ›å»ºäºŽ 2023å¹´7æœˆ5æ—¥ ä¸Šæµ·å¸‚å˜‰å®šåŒºå®‰äº­é•‡
  */
 
 #pragma once
@@ -17,7 +17,7 @@
 namespace video {
 namespace svga {
 
-// ½« VESA Virtual Mem ·Åµ½ 128MB ÒÔÉÏµÄÇøÓò¡£
+// å°† VESA Virtual Mem æ”¾åˆ° 128MB ä»¥ä¸Šçš„åŒºåŸŸã€‚
 const uintptr_t VESA_SCREEN_VADDR = Machine::KERNEL_SPACE_START_ADDRESS + 128 * 1024 * 1024;
 
 /**

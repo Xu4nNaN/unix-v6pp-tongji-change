@@ -1,6 +1,6 @@
 #[[
-    Æô¶¯Òýµ¼¹¹½¨ÎÄ¼þ
-    ´´½¨ÓÚ 2024Äê4ÔÂ28ÈÕ ÉÏº£ÊÐ¼Î¶¨Çø°²Í¤Õò
+    å¯åŠ¨å¼•å¯¼æž„å»ºæ–‡ä»¶
+    åˆ›å»ºäºŽ 2024å¹´4æœˆ28æ—¥ ä¸Šæµ·å¸‚å˜‰å®šåŒºå®‰äº­é•‡
 
     by 2051565 GTY
 ]]
@@ -8,7 +8,7 @@
 
 set(BOOT_OUTPUT_DIR "${CMAKE_SOURCE_DIR}/../target/objs/boot")
 
-# Ê¹ÓÃ Ninja Ê±£¬Êä³öÂ·¾¶»á³öÏÖÎÊÌâ¡£
+# ä½¿ç”¨ Ninja æ—¶ï¼Œè¾“å‡ºè·¯å¾„ä¼šå‡ºçŽ°é—®é¢˜ã€‚
 set(BOOT_OUTPUT_DIR_NINJA "${CMAKE_SOURCE_DIR}/../target/objs")
 
 file(MAKE_DIRECTORY ${BOOT_OUTPUT_DIR})
@@ -21,8 +21,8 @@ enable_language(ASM_NASM)
 add_executable(boot boot.asm)
 
 
-# sector2 Òª×÷ÎªÕû¸öÄÚºË´úÂëµÄÈë¿Ú¡£ÐèÒªµ¥¶À¹¹½¨¡£
-# Á´½ÓÊ±£¬Ëü»á±»Ö¸¶¨·Åµ½¿ªÍ·Î»ÖÃ¡£
+# sector2 è¦ä½œä¸ºæ•´ä¸ªå†…æ ¸ä»£ç çš„å…¥å£ã€‚éœ€è¦å•ç‹¬æž„å»ºã€‚
+# é“¾æŽ¥æ—¶ï¼Œå®ƒä¼šè¢«æŒ‡å®šæ”¾åˆ°å¼€å¤´ä½ç½®ã€‚
 add_custom_command(
     OUTPUT ${BOOT_OUTPUT_DIR}/sector2.o
     COMMAND nasm -f elf32 ${CMAKE_CURRENT_SOURCE_DIR}/sector2.asm -o ${BOOT_OUTPUT_DIR}/sector2.o

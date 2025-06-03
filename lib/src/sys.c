@@ -23,7 +23,7 @@ int fork()
 	return -1;
 }
 
-int wait(int* status)	/* ��ȡ�ӽ��̷��ص�Return Code */
+int wait(int* status)	/* 获取子进程返回的Return Code */
 {
 	int res;
 	__asm__ __volatile__ ( "int $0x80":"=a"(res):"a"(7),"b"(status));
@@ -32,7 +32,7 @@ int wait(int* status)	/* ��ȡ�ӽ��̷��ص�Return Code */
 	return -1;
 }
 
-int exit(int status)	/* �ӽ��̷��ظ������̵�Return Code */
+int exit(int status)	/* 子进程返回给父进程的Return Code */
 {
 	int res;
 	__asm__ __volatile__ ( "int $0x80":"=a"(res):"a"(1),"b"(status));
@@ -68,12 +68,12 @@ int sleep(unsigned int seconds)
 	return -1;
 }
 
-/* ʹ��errno��Ҫinclude "stdlib.h" */
+/* 使用errno需要include "stdlib.h" */
 int brk(void * newEndDataAddr)
 {
 	int res;
 	__asm__ volatile ("int $0x80":"=a"(res):"a"(17),"b"(newEndDataAddr));
-	/* ϵͳ���õķ���ֵ��ֵAPP��ȫ�ֱ���errno */
+	/* 系统调用的返回值赋值APP的全局变量errno */
 	if ( res >= 0 )
 		return res;
 	errno = -1*res;

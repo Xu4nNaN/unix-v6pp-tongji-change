@@ -4,7 +4,7 @@
 /*
  * console
  *
- * ´´½¨ÓÚ 2023Äê7ÔÂ6ÈÕ ÉÏº£ÊÐ¼Î¶¨Çø°²Í¤Õò
+ * åˆ›å»ºäºŽ 2023å¹´7æœˆ6æ—¥ ä¸Šæµ·å¸‚å˜‰å®šåŒºå®‰äº­é•‡
  */
 
 #ifdef USE_VESA
@@ -45,7 +45,7 @@ int32_t Console::write(const char* buf, int32_t len, int32_t color) {
     const char* p = buf;
     while ((len < 0 || p - buf < len) && *p != AsciiChar::NUL) {
 
-        // ¶ÔÓÚ \n£¬Èç¹ûÇ°Ò»¸ö²»ÊÇ \r£¬Ôò²¹³äÊä³ö \r¡£
+        // å¯¹äºŽ \nï¼Œå¦‚æžœå‰ä¸€ä¸ªä¸æ˜¯ \rï¼Œåˆ™è¡¥å……è¾“å‡º \rã€‚
         if (*p == AsciiChar::LF && ((p > buf && *(p - 1) != AsciiChar::CR) || p == buf)) {
             putchar(AsciiChar::CR, color);
         }
@@ -160,7 +160,7 @@ void Console::putchar(uint8_t ch, int32_t color) {
 
             auto oldX = currX;
             auto posX = oldX;
-            posX &= 0xFFFFFFF8;	/* Ïò×ó¶ÔÆëµ½Ç°Ò»¸öTab±ß½ç */
+            posX &= 0xFFFFFFF8;	/* å‘å·¦å¯¹é½åˆ°å‰ä¸€ä¸ªTabè¾¹ç•Œ */
             posX += 8;
             
             if ( posX >= CH_NCOLS(videoMem.width) )

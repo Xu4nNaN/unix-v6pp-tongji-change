@@ -2,9 +2,9 @@
 // https://github.com/FlowerBlackG/YurongOS/tree/master/src/video/console/fonts.h
 
 /*
- * ¿ØÖÆÌ¨×ÖÌå¡£
+ * æ§åˆ¶å°å­—ä½“ã€‚
  *
- * ´´½¨ÓÚ 2023Äê7ÔÂ6ÈÕ ÉÏº£ÊĞ¼Î¶¨Çø°²Í¤Õò
+ * åˆ›å»ºäº 2023å¹´7æœˆ6æ—¥ ä¸Šæµ·å¸‚å˜‰å®šåŒºå®‰äº­é•‡
  */
 
 #pragma once

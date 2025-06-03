@@ -4,7 +4,7 @@
 /*
  * console
  *
- * ´´½¨ÓÚ 2023Äê7ÔÂ6ÈÕ ÉÏº£ÊÐ¼Î¶¨Çø°²Í¤Õò
+ * åˆ›å»ºäºŽ 2023å¹´7æœˆ6æ—¥ ä¸Šæµ·å¸‚å˜‰å®šåŒºå®‰äº­é•‡
  */
 
 #pragma once
@@ -51,8 +51,8 @@ const int32_t OUTPUT_DEFAULT_COLOR = 0xffffff;
 const int32_t DIAGNOSE_DEFAULT_COLOR = 0xf8df70;
 
 /**
- * ³õÊ¼»¯¡£
- * ÒÀÀµ svga¡£ÐèÒªÏÈ³õÊ¼»¯ svga£¬ÔÙµ÷ÓÃ±¾º¯Êý¡£
+ * åˆå§‹åŒ–ã€‚
+ * ä¾èµ– svgaã€‚éœ€è¦å…ˆåˆå§‹åŒ– svgaï¼Œå†è°ƒç”¨æœ¬å‡½æ•°ã€‚
  */
 void init();
 

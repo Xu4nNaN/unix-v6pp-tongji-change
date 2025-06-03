@@ -1,8 +1,8 @@
 #!/bin/bash
 
-# Unix V6++ Tongji ³õÊ¼»¯½Å±¾
+# Unix V6++ Tongji åˆå§‹åŒ–è„šæœ¬
 #
-# ´´½¨ÓÚ 2024Äê8ÔÂ4ÈÕ ÉÏº£ÊĞ¼Î¶¨Çø
+# åˆ›å»ºäº 2024å¹´8æœˆ4æ—¥ ä¸Šæµ·å¸‚å˜‰å®šåŒº
 # by 2252707 CYT
 
 FILE_SYS_EDITOR_REPO='https://git.tongji.edu.cn/vesper-system/unix-v6pp-filesystem-editor.git'

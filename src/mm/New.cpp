@@ -1,8 +1,8 @@
 #include "New.h"
 /*
- * Õâ¸öÎÄ¼şÓĞÎÊÌâ
- * 1¡¢·µ»ØµÄÊÇ¿Õ¼äµÄÎïÀíµØÖ·
- * 2¡¢newºóÃæµÄ²ÎÊıÊÇĞèÒªµÄ¿Õ¼ä´óĞ¡£¬Ã»·¨ÉêÇë¿É±ä³¤Êı×é£¬²Î¼ûPEParser.cppÖĞ  line 157.
+ * è¿™ä¸ªæ–‡ä»¶æœ‰é—®é¢˜
+ * 1ã€è¿”å›çš„æ˜¯ç©ºé—´çš„ç‰©ç†åœ°å€
+ * 2ã€newåé¢çš„å‚æ•°æ˜¯éœ€è¦çš„ç©ºé—´å¤§å°ï¼Œæ²¡æ³•ç”³è¯·å¯å˜é•¿æ•°ç»„ï¼Œå‚è§PEParser.cppä¸­  line 157.
  */
 
 KernelAllocator* g_pAllocator;
@@ -40,7 +40,7 @@ void operator delete (void* p)
 }
 
 
-void operator delete (void* p, unsigned int n)  // todo: n ºÃÏñÃ»ÓÃÉÏ£¿
+void operator delete (void* p, unsigned int n)  // todo: n å¥½åƒæ²¡ç”¨ä¸Šï¼Ÿ
 {
 	unsigned long address = (unsigned long)p;
 	if (!address) {

@@ -14,10 +14,10 @@ PEParser::PEParser()
     this->sectionHeaders = 0;
 }
 
-/* Ô­À´V6++µÄPEParser */
+/* åŸæ¥V6++çš„PEParser */
 PEParser::PEParser(unsigned long peAddress)
 {
-	this->peAddress = peAddress + 0xC0000000;   // peÍ·µÄĞéµØÖ·
+	this->peAddress = peAddress + 0xC0000000;   // peå¤´çš„è™šåœ°å€
 }
 
 unsigned int PEParser::Relocate(Inode* p_inode, bool sharedText)
@@ -27,18 +27,18 @@ unsigned int PEParser::Relocate(Inode* p_inode, bool sharedText)
 	unsigned cnt = 0;
 	unsigned int i0 = 0;
 
-	/* Èç¹û¿ÉÒÔºÍÆäËü½ø³Ì¹²ÏíÕıÎÄ¶Î£¬ÎŞĞèÎÄ¼şÖĞ¶ÁÈëÕıÎÄ¶Î */
+	/* å¦‚æœå¯ä»¥å’Œå…¶å®ƒè¿›ç¨‹å…±äº«æ­£æ–‡æ®µï¼Œæ— éœ€æ–‡ä»¶ä¸­è¯»å…¥æ­£æ–‡æ®µ */
 	PageTable* pUserPageTable = Machine::Instance().GetUserPageTableArray();
 	unsigned int textBegin = this->TextAddress >> 12 , textLength = this->TextSize >> 12;
 	PageTableEntry* pointer = (PageTableEntry *)pUserPageTable;
 
 	
-	/*Èç¹ûÓëÆäËü½ø³Ì¹²ÏíÕıÎÄ¶Î£¬¹²ÏíÕıÎÄ¶ÎÇĞ²»¿ÉÇå0*/
+	/*å¦‚æœä¸å…¶å®ƒè¿›ç¨‹å…±äº«æ­£æ–‡æ®µï¼Œå…±äº«æ­£æ–‡æ®µåˆ‡ä¸å¯æ¸…0*/
 
 	int secIdxInit = !!sharedText;
 	if (!sharedText)
 	{
-		// ĞŞ¸ÄÕıÎÄ¶ÎµÄ¶ÁĞ´±êÖ¾£¬ÎªÄÚºËĞ´´úÂë¶Î×ö×¼±¸
+		// ä¿®æ”¹æ­£æ–‡æ®µçš„è¯»å†™æ ‡å¿—ï¼Œä¸ºå†…æ ¸å†™ä»£ç æ®µåšå‡†å¤‡
 		for (i0 = textBegin; i0 < textBegin + textLength; i0++)
 			pointer[i0].m_ReadWriter = 1;
 
@@ -52,7 +52,7 @@ unsigned int PEParser::Relocate(Inode* p_inode, bool sharedText)
 
 	const int wantedSectionsSize = sizeof(wantedSections) / sizeof(wantedSections[0]);
 
-    /* ¶ÔËùÓĞÒ³ÃæÖ´ĞĞÇå0²Ù×÷£¬ÕâÑùbss±äÁ¿µÄ³õÖµ¾ÍÊÇ0 */
+    /* å¯¹æ‰€æœ‰é¡µé¢æ‰§è¡Œæ¸…0æ“ä½œï¼Œè¿™æ ·bsså˜é‡çš„åˆå€¼å°±æ˜¯0 */
 	for (int i = 0 ; i < this->ntHeader.FileHeader.NumberOfSections; i++ )
 	{
 		auto& secHeader = this->sectionHeaders[i];
@@ -83,7 +83,7 @@ unsigned int PEParser::Relocate(Inode* p_inode, bool sharedText)
 	}
 
 
-	/* ¶ÁÕıÎÄ¶Î£¨optional£©£»¶ÁÎÄ¼ş£¬µÃÈ«¾Ö±äÁ¿µÄ³õÖµ  */
+	/* è¯»æ­£æ–‡æ®µï¼ˆoptionalï¼‰ï¼›è¯»æ–‡ä»¶ï¼Œå¾—å…¨å±€å˜é‡çš„åˆå€¼  */
 
 
 	for (int i = 0 ; i < this->ntHeader.FileHeader.NumberOfSections; i++ )
@@ -115,7 +115,7 @@ unsigned int PEParser::Relocate(Inode* p_inode, bool sharedText)
 	}
 
 	if(!sharedText)
-	{   //½«ÕıÎÄ¶ÎÒ³Ãæ¸Ä»ØÖ»¶Á
+	{   //å°†æ­£æ–‡æ®µé¡µé¢æ”¹å›åªè¯»
 		for (i0 = 0; i0 < textLength; i0++)
 			pointer[i0].m_ReadWriter = 0;
 
@@ -136,13 +136,13 @@ bool PEParser::HeaderLoad(Inode* p_inode)
     User& u = Kernel::Instance().GetUser();
     KernelPageManager& kpm = Kernel::Instance().GetKernelPageManager();
 
-    /*¶ÁÈ¡dos header*/
+    /*è¯»å–dos header*/
     u.u_IOParam.m_Base = (unsigned char*)&dos_header;
     u.u_IOParam.m_Offset = 0;
     u.u_IOParam.m_Count = 0x40;
-    p_inode->ReadI();       //ÎÄ¼şIO²»»áÒòÎª¶à´ÎReadI¶øÔö¼Ó¡£ÓĞ»º´æµÄ£¡
+    p_inode->ReadI();       //æ–‡ä»¶IOä¸ä¼šå› ä¸ºå¤šæ¬¡ReadIè€Œå¢åŠ ã€‚æœ‰ç¼“å­˜çš„ï¼
 
-    /*¶ÁÈ¡nt_Header*/
+    /*è¯»å–nt_Header*/
     //ntHeader = (ImageNTHeader*)(kpm.AllocMemory(ntHeader_size)+0xC0000000);
     u.u_IOParam.m_Base = (unsigned char*)(&this->ntHeader);
     u.u_IOParam.m_Offset = dos_header.e_lfanew;
@@ -156,8 +156,8 @@ bool PEParser::HeaderLoad(Inode* p_inode)
 	}
 
 
-    /* Ô­±¾V6++ÄÚºË £º¶ÁÈ¡Section tablesÖÁÒ³±íÇø¡£ÕâÊÇÎŞÄÎÖ®¾Ù£¬ºËĞÄÌ¬ÓÃ²»ÁËmalloc£¡£¡
-     * Ï£ÍûÄÚºËÓÃ  new ºÍ free º¯ÊıÉêÇë¶¯Ì¬Êı×é¡£µ«ÏÖÔÚµÄnew²Ù×÷·ûºÃÏñ²»¶Ô¡£ÏÈÕâÃ´×Å¡£
+    /* åŸæœ¬V6++å†…æ ¸ ï¼šè¯»å–Section tablesè‡³é¡µè¡¨åŒºã€‚è¿™æ˜¯æ— å¥ˆä¹‹ä¸¾ï¼Œæ ¸å¿ƒæ€ç”¨ä¸äº†mallocï¼ï¼
+     * å¸Œæœ›å†…æ ¸ç”¨  new å’Œ free å‡½æ•°ç”³è¯·åŠ¨æ€æ•°ç»„ã€‚ä½†ç°åœ¨çš„newæ“ä½œç¬¦å¥½åƒä¸å¯¹ã€‚å…ˆè¿™ä¹ˆç€ã€‚
      * sectionHeaders = new ImageSectionHeader;
      * */
     //sectionHeaders = (ImageSectionHeader*)(kpm.AllocMemory(section_size * ntHeader.FileHeader.NumberOfSections)+0xC0000000);
@@ -168,8 +168,8 @@ bool PEParser::HeaderLoad(Inode* p_inode)
     p_inode->ReadI();
 
     /*
-    	 * @comment ÕâÀïhardcode gccµÄÂß¼­
-    	 * section Ë³ĞòÎª .text->.data->.rdata->.bss
+    	 * @comment è¿™é‡Œhardcode gccçš„é€»è¾‘
+    	 * section é¡ºåºä¸º .text->.data->.rdata->.bss
     	 *
     */
 	this->TextAddress =

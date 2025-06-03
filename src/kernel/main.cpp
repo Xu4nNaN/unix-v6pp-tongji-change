@@ -1,4 +1,4 @@
-/* �ں˵ĳ�ʼ�� */
+/* 内核的初始化 */
 
 #include "Video.h"
 #include "Simple.h"
@@ -37,9 +37,9 @@ extern "C" void MasterIRQ7()
 	
 	Diagnose::Write("IRQ7 from Master 8259A!\n");
 	
-	//��Ҫ���жϴ�������ĩβ��8259A����EOI����
-	//ʵ�鷢�֣���û������IOPort::OutByte(0x27, 0x20);�������Ч����һ����������Ϊ
-	//����EOI����֮����к�����IRQ7�жϽ��룬 �������������IRQ7ֻ�����һ�Ρ�
+	//需要在中断处理程序末尾先8259A发送EOI命令
+	//实验发现：有没有下面IOPort::OutByte(0x27, 0x20);这句运行效果都一样，本来以为
+	//发送EOI命令之后会有后续的IRQ7中断进入， 但试下来结果是IRQ7只会产生一次。
 	IOPort::OutByte(Chip8259A::MASTER_IO_PORT_1, Chip8259A::EOI);
 
 	RestoreContext();
@@ -60,13 +60,13 @@ static void callCtors()
 
 	
 	//constructor++;   
-		/*  (�����ȿ�һ�����ӽű���Link.ld)
-		Link script���޸Ĺ��������total�Ѿ�����constructor�ĸ����ˣ�
-		_CTOR_LIST__�ĵ�һ����Ԫ��ʼ����global/static�����constructor��
-		���Բ��� constructor++; 
+		/*  (可以先看一下链接脚本：Link.ld)
+		Link script中修改过后，这里的total已经不是constructor的个数了，
+		_CTOR_LIST__的第一个单元开始就是global/static对象的constructor，
+		所以不用 constructor++; 
 		*/
 	
-	while(constructor != &__CTOR_END__) //total����constructor���������������ڼ���Ƿ���_CTOR_LIST__��ĩβ
+	while(constructor != &__CTOR_END__) //total不是constructor的数量，而是用于检测是否到了_CTOR_LIST__的末尾
 	{
 		(*constructor)();
 		constructor++;
@@ -106,7 +106,7 @@ void main0(void)
 {
 	Machine& machine = Machine::Instance();
 
-	Chip8253::Init(60);	//��ʼ��ʱ���ж�оƬ
+	Chip8253::Init(60);	//初始化时钟中断芯片
 	Chip8259A::Init();
 	Chip8259A::IrqEnable(Chip8259A::IRQ_TIMER);		
 	DMA::Init();
@@ -122,19 +122,19 @@ void main0(void)
 	machine.InitIDT();	
 	machine.LoadIDT();
 
-	machine.InitPageDirectory();    // ��ʼ��ҳĿ¼������̬ҳ��
-	Machine::Instance().InitUserPageTable();     // ��ʼ���û�̬ҳ��
-	machine.EnablePageProtection();    //������ҳģʽ
+	machine.InitPageDirectory();    // 初始化页目录、核心态页表
+	Machine::Instance().InitUserPageTable();     // 初始化用户态页表
+	machine.EnablePageProtection();    //开启分页模式
 	/* 
-	 * InitPageDirectory()�н����Ե�ַ0-4Mӳ�䵽�����ڴ�
-	 * 0-4M��Ϊ��֤��ע����������������β�Ĵ�����ȷִ�У�
+	 * InitPageDirectory()中将线性地址0-4M映射到物理内存
+	 * 0-4M是为保证此注释以下至本函数结尾的代码正确执行！
 	 *
-	 * ���ڣ�����CS���ں˳�ʼ���׶εĶ�ѡ���ӣ�����μĴ���ȫ��bootʹ�õĶ�ѡ���ӣ�������SS��
-	 * �ֶε�Ԫ���������Ե�ַ��[0,4M)��������ҳģʽ��һ��Ҫ����οռ��ӳ���ϵ������ͨ������
-	 * [4M��8M)�ռ��û�������Ӧ�ñ�ӳ�䣬�����ȿ��ţ�InitUserPageTable(),base��0��
+	 * 现在，除了CS是内核初始化阶段的段选择子，其余段寄存器全是boot使用的段选择子，尤其是SS。
+	 * 分段单元给出的线性地址是[0,4M)。开启分页模式后，一定要有这段空间的映射关系，否则，通不过。
+	 * [4M，8M)空间用户区，不应该被映射，所以先空着，InitUserPageTable(),base填0。
 	 */
 
-	//ʹ��0x10�μĴ���
+	//使用0x10段寄存器
 	__asm
 		(" \
 		mov $0x10, %ax\n\t \
@@ -143,7 +143,7 @@ void main0(void)
 		mov %ax, %es\n\t"
 		);
 
-	//����ʼ����ջ����Ϊ0xc0400000�������ƻ��˷�װ�ԣ�����ʹ�ø��õķ���
+	//将初始化堆栈设置为0xc0400000，这里破坏了封装性，考虑使用更好的方法
 	__asm
 		(
 		" \
@@ -155,14 +155,14 @@ void main0(void)
 	__asm ("ud2");
 }
 
-/* Ӧ�ó����main���أ����̾���ֹ�ˣ���ȫ��runtime()�Ĺ��͡�û��������ֻ����exit��ֹ�����ˡ�xV6û�������^-^ */
+/* 应用程序从main返回，进程就终止了，这全是runtime()的功劳。没有它，就只能用exit终止进程了。xV6没这个功能^-^ */
 extern "C" void runtime()
 {
 	/*
-	1. ����runtime��stack Frame
-	2. esp��ָ���û�ջ��argcλ�ã���ebp��δ��ȷ��ʼ��
-	3. eax�д�ſ�ִ�г���EntryPoint
-	4~6. exit(0)��������
+	1. 销毁runtime的stack Frame
+	2. esp中指向用户栈中argc位置，而ebp尚未正确初始化
+	3. eax中存放可执行程序EntryPoint
+	4~6. exit(0)结束进程
 	*/
 	__asm("	leave;	\
 			movl %%esp, %%ebp;	\
@@ -173,8 +173,8 @@ extern "C" void runtime()
 }
 
 /*
-  * 1#������ִ����MoveToUserStack()��ring0�˳���ring3���ȼ��󣬻����ExecShell()���˺���ͨ��"int $0x80"
-  * (EAX=execvϵͳ���ú�)���ء�/Shell.exe�������书���൱�����û�������ִ��ϵͳ����execv(char* pathname, char* argv[])��
+  * 1#进程在执行完MoveToUserStack()从ring0退出到ring3优先级后，会调用ExecShell()，此函数通过"int $0x80"
+  * (EAX=execv系统调用号)加载“/Shell.exe”程序，其功能相当于在用户程序中执行系统调用execv(char* pathname, char* argv[])。
   */
 extern "C" void ExecShell()
 {
@@ -186,7 +186,7 @@ extern "C" void ExecShell()
 }
 
 #if 0
-/* �˺���test�ļ����еĴ�������ã���ò�ƿ���ɾ�����ǵð���ɾ��*/
+/* 此函数test文件夹中的代码会引用，但貌似可以删除，记得把它删掉*/
 extern "C" void Delay()
 {
 	for ( int i = 0; i < 50; i++ )
@@ -223,34 +223,34 @@ extern "C" void next()
 #endif
 	
 
-	//���ʱ��0M-4M���ڴ�ӳ���Ѿ�����ʹ���ˣ�����Ҫ����ӳ���û�̬��ҳ����Ϊ�û�̬������������׼��
+	//这个时候0M-4M的内存映射已经不被使用了，所以要重新映射用户态的页表，为用户态程序运行做好准备
 	//Machine::Instance().InitUserPageTable();
 	//FlushPageDirectory();
 	
 
 	Machine::Instance().LoadTaskRegister();
 	
-	/* ��ȡCMOS��ǰʱ�䣬����ϵͳʱ�� */
+	/* 获取CMOS当前时间，设置系统时钟 */
 	struct SystemTime cTime;
 	CMOSTime::ReadCMOSTime(&cTime);
-	/* MakeKernelTime()������ں�ʱ�䣬��1970��1��1��0ʱ����ǰ������ */
+	/* MakeKernelTime()计算出内核时间，从1970年1月1日0时至当前的秒数 */
 	Time::time = Utility::MakeKernelTime(&cTime);
 
-	/* ��CMOS�л�ȡ�����ڴ��С */
+	/* 从CMOS中获取物理内存大小 */
 	unsigned short memSize = 0;	/* size in KB */
 	unsigned char lowMem, highMem;
 
-	/* ����ֻ�ǽ���CMOSTime���е�ReadCMOSByte������ȡCMOS�������ڴ��С��Ϣ */
+	/* 这里只是借用CMOSTime类中的ReadCMOSByte函数读取CMOS中物理内存大小信息 */
 	lowMem = CMOSTime::ReadCMOSByte(CMOSTime::EXTENDED_MEMORY_ABOVE_1MB_LOW);
 	highMem = CMOSTime::ReadCMOSByte(CMOSTime::EXTENDED_MEMORY_ABOVE_1MB_HIGH);
 	memSize = (highMem << 8) + lowMem;
 
-	/* ����1MB���������ڴ����򣬼������ڴ����������ֽ�Ϊ��λ���ڴ��С */
+	/* 加上1MB以下物理内存区域，计算总内存容量，以字节为单位的内存大小 */
 	memSize += 1024; /* KB */
 	PageManager::PHY_MEM_SIZE = memSize * 1024;
 	UserPageManager::USER_PAGE_POOL_SIZE = PageManager::PHY_MEM_SIZE - UserPageManager::USER_PAGE_POOL_START_ADDR;
 
-	/* ��������ϵͳ�ں˳�ʼ���߼�	 */
+	/* 真正操作系统内核初始化逻辑	 */
 	Kernel::Instance().Initialize();	
 	Kernel::Instance().GetProcessManager().SetupProcessZero();
 	isInit = true;
@@ -260,7 +260,7 @@ extern "C" void next()
 
 	Diagnose::Write("test \n");
 
-	/*  ��ʼ��rootDirInode���û���ǰ����Ŀ¼���Ա�NameI()�������� */
+	/*  初始化rootDirInode和用户当前工作目录，以便NameI()正常工作 */
 	FileManager& fileMgr = Kernel::Instance().GetFileManager();
 
 	//fileMgr.rootDirInode = g_InodeTable.IGet(DeviceManager::ROOTDEV, FileSystem::ROOTINO);
@@ -273,7 +273,7 @@ extern "C" void next()
 	us.u_cdir->i_flag &= (~Inode::ILOCK);
 	strcpy(us.u_curdir, "/");
 
-	/* ��TTy�豸 */
+	/* 打开TTy设备 */
 	int fd_tty = lib_open("/dev/tty1", File::FREAD);
 
 	if ( fd_tty != 0 )
@@ -303,22 +303,22 @@ extern "C" void next()
 
     //us.u_MemoryDescriptor.Release();
 
-	int pid = Kernel::Instance().GetProcessManager().NewProc();         /* 0#���̴���1#���� */
-	if( 0 == pid )     /* 0#����ִ��Sched()����Ϊϵͳ����Զ�����ں���̬��Ψһ����  */
+	int pid = Kernel::Instance().GetProcessManager().NewProc();         /* 0#进程创建1#进程 */
+	if( 0 == pid )     /* 0#进程执行Sched()，成为系统中永远运行在核心态的唯一进程  */
 	{
 		us.u_procp->p_ttyp = NULL;
 		Kernel::Instance().GetProcessManager().Sched();
 	}
-	else               /* 1#����ִ��Ӧ�ó���shell.exe,����ͨ����  */
+	else               /* 1#进程执行应用程序shell.exe,是普通进程  */
 	{
-		Machine::Instance().InitUserPageTable();      //����ֱ��д0x202,0x203ҳ����û�����ʵ��ַӳ���һ��okay��
+		Machine::Instance().InitUserPageTable();      //这是直接写0x202,0x203页表，没相对虚实地址映射表一样okay！
 		FlushPageDirectory();
 
 		CRT::ClearScreen();
 
-		/* 1#���̻��û�̬��ִ��exec("shell.exe")ϵͳ����*/
+		/* 1#进程回用户态，执行exec("shell.exe")系统调用*/
 		MoveToUserStack();
-		__asm ("call *%%eax" :: "a"((unsigned long)ExecShell - 0xC0000000));   //Ҫ�����û�ջ������һ��Ҫ��ӳ�䣡
+		__asm ("call *%%eax" :: "a"((unsigned long)ExecShell - 0xC0000000));   //要访问用户栈，所以一定要有映射！
 	}
 }
 

@@ -1,6 +1,6 @@
 #[[
-    Lib �����ļ�
-    ������ 2024��4��28�� �Ϻ��мζ�����ͤ��
+    Lib 构造文件
+    创建于 2024年4月28日 上海市嘉定区安亭镇
 
     by 2051565 GTY
 ]]
@@ -16,17 +16,17 @@ set(V6PP_BUILD_TIME_HUMAN_READABLE ${build_time_human_readable})
 project(v6pptongji)
 
 
-# ָ��ʹ�� C++20
+# 指定使用 C++20
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED TRUE)
 
 
-# ͷ�ļ�·����
+# 头文件路径。
 include_directories("${PROJECT_SOURCE_DIR}/../include")
 include_directories("${PROJECT_SOURCE_DIR}")
 
 
-# GCC(g++) ����ѡ�
+# GCC(g++) 编译选项。
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -m32")
@@ -46,14 +46,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mno-sse2")
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wno-unused-variable")
 
-# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcmodel=large")  # ����64λ�ں�ʱ������
+# set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -mcmodel=large")  # 编译64位内核时需启用
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fdiagnostics-color=always")
 
 set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS}")
 
 #[[ 
-    ��Ŀ�������
+    项目构造产物
 ]]
 file(GLOB_RECURSE CPP_SOURCE_FILES *.cpp)
 file(GLOB_RECURSE C_SOURCE_FILES *.c)

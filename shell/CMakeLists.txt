@@ -1,6 +1,6 @@
 #[[
-    Unix V6++ Shell ¹¹ÔìÎÄ¼þ
-    ´´½¨ÓÚ 2024Äê4ÔÂ28ÈÕ ÉÏº£ÊÐ¼Î¶¨Çø°²Í¤Õò
+    Unix V6++ Shell æž„é€ æ–‡ä»¶
+    åˆ›å»ºäºŽ 2024å¹´4æœˆ28æ—¥ ä¸Šæµ·å¸‚å˜‰å®šåŒºå®‰äº­é•‡
 
     by 2051565 GTY
 ]]
@@ -15,13 +15,13 @@ set(V6PP_BUILD_TIME_ISO8601 ${build_time_iso8601})
 set(V6PP_BUILD_TIME_HUMAN_READABLE ${build_time_human_readable})
 
 
-# Í·ÎÄ¼þÂ·¾¶¡£
+# å¤´æ–‡ä»¶è·¯å¾„ã€‚
 include_directories("${PROJECT_SOURCE_DIR}")
 include_directories("${PROJECT_SOURCE_DIR}/../lib/include")
 include_directories("${PROJECT_SOURCE_DIR}/../lib/src")
 
 
-# GCC(g++) ±àÒëÑ¡Ïî¡£
+# GCC(g++) ç¼–è¯‘é€‰é¡¹ã€‚
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -g")
@@ -53,7 +53,7 @@ set(CMAKE_C_FLAGS "${CMAKE_CXX_FLAGS}")
 
 
 #[[ 
-    ÏîÄ¿¹¹Ôì²úÎï
+    é¡¹ç›®æž„é€ äº§ç‰©
 ]]
 file(GLOB_RECURSE C_SOURCE_FILES *.c)
 set(CMAKE_CXX_LINK_EXECUTABLE "ld --whole-archive -Ttext-segment=0x400000 <LINK_FLAGS> -e main1 -static <LINK_LIBRARIES> <OBJECTS> -o <TARGET>")

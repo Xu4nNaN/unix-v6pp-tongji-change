@@ -9,7 +9,7 @@ void MemoryDescriptor::Initialize()
 {
 	KernelPageManager& kernelPageManager = Kernel::Instance().GetKernelPageManager();
 	
-	/* m_UserPageTableArrayÐèÒª°ÑAllocMemory()·µ»ØµÄÎïÀíÄÚ´æµØÖ· + 0xC0000000 */
+	/* m_UserPageTableArrayéœ€è¦æŠŠAllocMemory()è¿”å›žçš„ç‰©ç†å†…å­˜åœ°å€ + 0xC0000000 */
 	this->m_UserPageTableArray = (PageTable*)(kernelPageManager.AllocMemory(sizeof(PageTable) * USER_SPACE_PAGE_TABLE_CNT) + Machine::KERNEL_SPACE_START_ADDRESS);
 }
 
@@ -28,7 +28,7 @@ unsigned int MemoryDescriptor::MapEntry(unsigned long virtualAddress, unsigned i
 {	
 	unsigned long address = virtualAddress - USER_SPACE_START_ADDRESS;
 	
-	//¼ÆËã´ÓpagetableµÄÄÄÒ»¸öµØÖ·¿ªÊ¼Ó³Éä
+	//è®¡ç®—ä»Žpagetableçš„å“ªä¸€ä¸ªåœ°å€å¼€å§‹æ˜ å°„
 	unsigned long startIdx = address >> 12;
 	unsigned long cnt = ( size + (PageManager::PAGE_SIZE - 1) )/ PageManager::PAGE_SIZE;
 
@@ -86,7 +86,7 @@ bool MemoryDescriptor::EstablishUserPageTable( unsigned long textVirtualAddress,
 {
 	User& u = Kernel::Instance().GetUser();
 
-	/* Èç¹û³¬³öÔÊÐíµÄÓÃ»§³ÌÐò×î´ó8MµÄµØÖ·¿Õ¼äÏÞÖÆ */
+	/* å¦‚æžœè¶…å‡ºå…è®¸çš„ç”¨æˆ·ç¨‹åºæœ€å¤§8Mçš„åœ°å€ç©ºé—´é™åˆ¶ */
 	if ( textSize + dataSize + stackSize  + PageManager::PAGE_SIZE > USER_SPACE_SIZE - textVirtualAddress)
 	{
 		u.u_error = User::ENOMEM;
@@ -96,19 +96,19 @@ bool MemoryDescriptor::EstablishUserPageTable( unsigned long textVirtualAddress,
 
 	this->ClearUserPageTable();
 
-	/* ÒÔÏà¶ÔÆðÊ¼µØÖ·phyPageIndexÎª0£¬ÎªÕýÎÄ¶Î½¨Á¢Ïà¶ÔµØÖ·Ó³ÕÕ±í */
+	/* ä»¥ç›¸å¯¹èµ·å§‹åœ°å€phyPageIndexä¸º0ï¼Œä¸ºæ­£æ–‡æ®µå»ºç«‹ç›¸å¯¹åœ°å€æ˜ ç…§è¡¨ */
 	unsigned int phyPageIndex = 0;
 	phyPageIndex = this->MapEntry(textVirtualAddress, textSize, phyPageIndex, false);
 
-	/* ÒÔÏà¶ÔÆðÊ¼µØÖ·phyPageIndexÎª1£¬ppdaÇøÕ¼ÓÃ1Ò³4K´óÐ¡ÎïÀíÄÚ´æ£¬ÎªÊý¾Ý¶Î½¨Á¢Ïà¶ÔµØÖ·Ó³ÕÕ±í */
+	/* ä»¥ç›¸å¯¹èµ·å§‹åœ°å€phyPageIndexä¸º1ï¼ŒppdaåŒºå ç”¨1é¡µ4Kå¤§å°ç‰©ç†å†…å­˜ï¼Œä¸ºæ•°æ®æ®µå»ºç«‹ç›¸å¯¹åœ°å€æ˜ ç…§è¡¨ */
 	phyPageIndex = 1;
 	phyPageIndex = this->MapEntry(dataVirtualAddress, dataSize, phyPageIndex, true);
 
-	/* ½ô¸ú×ÅÊý¾Ý¶ÎÖ®ºó£¬Îª¶ÑÕ»¶Î½¨Á¢Ïà¶ÔµØÖ·Ó³ÕÕ±í */
+	/* ç´§è·Ÿç€æ•°æ®æ®µä¹‹åŽï¼Œä¸ºå †æ ˆæ®µå»ºç«‹ç›¸å¯¹åœ°å€æ˜ ç…§è¡¨ */
 	unsigned long stackStartAddress = (USER_SPACE_START_ADDRESS + USER_SPACE_SIZE - stackSize) & 0xFFFFF000;
 	this->MapEntry(stackStartAddress, stackSize, phyPageIndex, true);
 
-	/* ½«Ïà¶ÔµØÖ·Ó³ÕÕ±í¸ù¾ÝÕýÎÄ¶ÎºÍÊý¾Ý¶ÎÔÚÄÚ´æÖÐµÄÆðÊ¼µØÖ·pText->x_caddr¡¢p_addr£¬½¨Á¢ÓÃ»§Ì¬ÄÚ´æÇøµÄÒ³±íÓ³Éä */
+	/* å°†ç›¸å¯¹åœ°å€æ˜ ç…§è¡¨æ ¹æ®æ­£æ–‡æ®µå’Œæ•°æ®æ®µåœ¨å†…å­˜ä¸­çš„èµ·å§‹åœ°å€pText->x_caddrã€p_addrï¼Œå»ºç«‹ç”¨æˆ·æ€å†…å­˜åŒºçš„é¡µè¡¨æ˜ å°„ */
 	this->MapToPageTable();
 	return true;
 }
@@ -152,18 +152,18 @@ void MemoryDescriptor::MapToPageTable()
 	{
 		for ( unsigned int j = 0; j < PageTable::ENTRY_CNT_PER_PAGETABLE; j++ )
 		{
-			pUserPageTable[i].m_Entrys[j].m_Present = 0;   //ÏÈÇå0
+			pUserPageTable[i].m_Entrys[j].m_Present = 0;   //å…ˆæ¸…0
 
 			if ( 1 == this->m_UserPageTableArray[i].m_Entrys[j].m_Present )
 			{
-				/* Ö»¶ÁÊôÐÔ±íÊ¾ÕýÎÄ¶Î¶ÔÓ¦µÄÒ³£¬ÒÔpText->x_caddrÎªÄÚ´æÆðÊ¼µØÖ· */
+				/* åªè¯»å±žæ€§è¡¨ç¤ºæ­£æ–‡æ®µå¯¹åº”çš„é¡µï¼Œä»¥pText->x_caddrä¸ºå†…å­˜èµ·å§‹åœ°å€ */
 				if ( 0 == this->m_UserPageTableArray[i].m_Entrys[j].m_ReadWriter )
 				{
 					pUserPageTable[i].m_Entrys[j].m_Present = 1;
 					pUserPageTable[i].m_Entrys[j].m_ReadWriter = this->m_UserPageTableArray[i].m_Entrys[j].m_ReadWriter;
 					pUserPageTable[i].m_Entrys[j].m_PageBaseAddress = this->m_UserPageTableArray[i].m_Entrys[j].m_PageBaseAddress + (textAddress >> 12);
 				}
-				/* ¶ÁÐ´ÊôÐÔ±íÊ¾Êý¾Ý¶Î¶ÔÓ¦µÄÒ³£¬ÒÔp_addrÎªÄÚ´æÆðÊ¼µØÖ· */
+				/* è¯»å†™å±žæ€§è¡¨ç¤ºæ•°æ®æ®µå¯¹åº”çš„é¡µï¼Œä»¥p_addrä¸ºå†…å­˜èµ·å§‹åœ°å€ */
 				else if ( 1 == this->m_UserPageTableArray[i].m_Entrys[j].m_ReadWriter )
 				{
 					pUserPageTable[i].m_Entrys[j].m_Present = 1;

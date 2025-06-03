@@ -122,7 +122,7 @@ public:
 //	static const unsigned int RDATA_SECTION_IDX = 2;
 //	static const unsigned int BSS_SECTION_IDX = 3;
 //	static const unsigned int IDATA_SECTION_IDX = 4;
-// GTY said: ²»ĞíÑ§ÉÏÃæÕâ¸öĞ´·¨£¬ÕâÑùĞ´ÊÇ´íµÄ¡£Êµ¼ÊµÄ section Ë³Ğò²¢²»¹Ì¶¨¡£
+// GTY said: ä¸è®¸å­¦ä¸Šé¢è¿™ä¸ªå†™æ³•ï¼Œè¿™æ ·å†™æ˜¯é”™çš„ã€‚å®é™…çš„ section é¡ºåºå¹¶ä¸å›ºå®šã€‚
 
     static const int ntHeader_size = 0xf8;
     static const int section_size = 0x28;
@@ -132,9 +132,9 @@ public:
 	PEParser(unsigned long peAddress);
 	unsigned long Parse();
 	/*
-	 *@comment ½«ParseºóµÄexe¶¨Î»µ½ÄÚ´æÖĞÕıÈ·µÄÎ»ÖÃ
-	 *@Important ÔÚRelocateÖ®Ç°ĞèÒªÊ×ÏÈµ÷ÓÃParse()ÒÔµÃµ½ËùĞèÒªµÄ
-	 * exe¸÷¸ösectionµÄĞÅÏ¢£¬Í¬Ê±ĞèÒªÊ×ÏÈmapºÃÒ³±í£¬·ñÔò»áÊ§°Ü
+	 *@comment å°†Parseåçš„exeå®šä½åˆ°å†…å­˜ä¸­æ­£ç¡®çš„ä½ç½®
+	 *@Important åœ¨Relocateä¹‹å‰éœ€è¦é¦–å…ˆè°ƒç”¨Parse()ä»¥å¾—åˆ°æ‰€éœ€è¦çš„
+	 * exeå„ä¸ªsectionçš„ä¿¡æ¯ï¼ŒåŒæ—¶éœ€è¦é¦–å…ˆmapå¥½é¡µè¡¨ï¼Œå¦åˆ™ä¼šå¤±è´¥
 	 */
 	unsigned int Relocate();
 	unsigned int Relocate(Inode* p_inode, bool sharedText);
